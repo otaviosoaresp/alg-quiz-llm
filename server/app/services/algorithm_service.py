@@ -14,5 +14,16 @@ def create_algorithm(db: Session, algorithm: AlgorithmCreate):
     db.refresh(db_algorithm)
     return db_algorithm
 
+def update_algorithm(db: Session, algorithm_id: int, algorithm: AlgorithmCreate):
+    db_algorithm = algorithm_repository.get_algorithm_by_id(db, algorithm_id)
+    if db_algorithm is None:
+        return None
+    db_algorithm.name = algorithm.name
+    db_algorithm.description = algorithm.description
+    db_algorithm.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(db_algorithm)
+    return db_algorithm
+
 def get_algorithm(db: Session, algorithm_id: int):
     return algorithm_repository.get_algorithm_by_id(db, algorithm_id)

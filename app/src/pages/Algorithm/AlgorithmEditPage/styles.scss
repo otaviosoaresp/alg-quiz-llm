@@ -1,0 +1,17 @@
+
+.algorithm-edit-page {
+
+    // center the card
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 1rem;
+
+    .bg-card {
+        width: 100%;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+}

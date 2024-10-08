@@ -1,5 +1,4 @@
-import { Bell } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 export function Header(): React.ReactNode {
     return (
@@ -9,26 +8,39 @@ export function Header(): React.ReactNode {
                     AlgoQuiz
                 </div>
                 <nav className="flex space-x-6">
-                    <Link to="/" className="text-primary font-semibold">
+                    <NavLink 
+                        to="/" 
+                        className={({ isActive }) => 
+                            isActive ? "text-primary font-semibold" : "text-muted-foreground"
+                        }
+                    >
                         Home
-                    </Link>
-                    <Link to="/algoritmos" className="text-muted-foreground">
+                    </NavLink>
+                    <NavLink 
+                        to="/algoritmos" 
+                        className={({ isActive }) => 
+                            isActive ? "text-primary font-semibold" : "text-muted-foreground"
+                        }
+                    >
                         Algoritmos
-                    </Link>
-                    <Link to="/quizz" className="text-muted-foreground">
+                    </NavLink>
+                    <NavLink 
+                        to="/quizz" 
+                        className={({ isActive }) => 
+                            isActive ? "text-primary font-semibold" : "text-muted-foreground"
+                        }
+                    >
                         Quizz
-                    </Link>
-                    <Link to="/sobre" className="text-muted-foreground">
+                    </NavLink>
+                    <NavLink 
+                        to="/sobre" 
+                        className={({ isActive }) => 
+                            isActive ? "text-primary font-semibold" : "text-muted-foreground"
+                        }
+                    >
                         Sobre
-                    </Link>
+                    </NavLink>
                 </nav>
-            </div>
-            <div className="flex items-center space-x-4">
-                <Bell className="text-muted-foreground" />
-                <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-primary rounded-full"></div>
-                    <span className="text-sm">Nome do Usuário</span>
-                </div>
             </div>
         </header>
     );

@@ -1,18 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
-from app.db.session import SessionLocal
+from app.db.session import get_db
 from app.services import algorithm_service
 from app.schemas.algorithm import AlgorithmResponse, AlgorithmCreate
 from app.use_cases.ollama_generate_quiz import OllamaGenerateQuizUseCase
 
 router = APIRouter()
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 @router.get("/algorithms", response_model=list[AlgorithmResponse], tags=["algorithms"])
 async def get_algorithms(db: Session = Depends(get_db), skip: int = 0, limit: int = 100):
@@ -53,6 +47,27 @@ async def get_algorithm(algorithm_id: int, db: Session = Depends(get_db)):
     if algorithm is None:
         raise HTTPException(status_code=404, detail="Algorithm not found")
     return AlgorithmResponse.from_orm(algorithm)
+
+@router.put("/algorithms/{algorithm_id}", response_model=AlgorithmResponse, tags=["algorithms"])
+async def update_algorithm(algorithm_id: int, algorithm: AlgorithmCreate, db: Session = Depends(get_db)):
+    """
+    Atualiza um algoritmo específico pelo ID.
+
+    - **algorithm_id**: ID do algoritmo a ser atualizado
+    - **algorithm**: Dados do algoritmo a ser atualizado
+    """
+    updated_algorithm = algorithm_service.update_algorithm(db, algorithm_id, algorithm)
+    return AlgorithmResponse.from_orm(updated_algorithm)
+
+@router.delete("/algorithms/{algorithm_id}", tags=["algorithms"])
+async def delete_algorithm(algorithm_id: int, db: Session = Depends(get_db)):
+    """
+    Deleta um algoritmo específico pelo ID.
+
+    - **algorithm_id**: ID do algoritmo a ser deletado
+    """
+    algorithm_service.delete_algorithm(db, algorithm_id)
+    return {"message": "Algorithm deleted successfully"}
 
 @router.get("/algorithms/{algorithm_id}/generate-quiz", tags=["algorithms"])
 async def generate_quiz(algorithm_id: int):
