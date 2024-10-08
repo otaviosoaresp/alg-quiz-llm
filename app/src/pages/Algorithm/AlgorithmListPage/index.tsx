@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Algorithm } from '@/types/Algorithm';
+import { Algorithm } from '@/types/algorithm';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Pencil, Trash2 } from 'lucide-react';
 import './styles.scss';
@@ -35,7 +35,7 @@ export const AlgorithmListPage = () => {
       try {
         setIsLoading(true);
         const data = await fetchAlgorithmsUseCase();
-        setAlgorithms(data);
+        setAlgorithms(data as Algorithm[]);
         setError(null);
       } catch (err) {
         setError('Failed to load algorithms. Please try again later.');

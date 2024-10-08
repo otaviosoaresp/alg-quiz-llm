@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import { CodeEditor } from '../components/CodeEditor';
 import './styles.scss';
 
 export const AlgorithmCreatePage = () => {
@@ -53,17 +54,15 @@ export const AlgorithmCreatePage = () => {
             </div>
             <div className="form-group">
               <label htmlFor="solutionCode">Solution code</label>
-              <Textarea
-                id="solutionCode"
+              <CodeEditor
                 value={solutionCode}
-                onChange={(e) => setSolutionCode(e.target.value)}
-                required
+                onChange={setSolutionCode}
               />
             </div>
           </motion.form>
         </CardContent>
         <CardFooter>
-          <Button type="submit">Crate Algorithm</Button>
+          <Button type="submit">Create Algorithm</Button>
         </CardFooter>
       </Card>
     </div>

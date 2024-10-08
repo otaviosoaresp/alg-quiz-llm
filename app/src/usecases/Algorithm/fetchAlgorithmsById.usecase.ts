@@ -1,5 +1,5 @@
 import { httpClient } from "@/config/api";
-import { Algorithm } from "@/types/Algorithm";
+import { Algorithm } from "@/types/algorithm";
 
 
 export const fetchAlgorithmByIdUseCase = async (id: number): Promise<Algorithm> => {

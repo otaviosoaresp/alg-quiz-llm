@@ -1,24 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Algorithm } from '../../../types/Algorithm';
+import { Algorithm } from '../../../types/algorithm';
 
 import { updateAlgorithmUseCase } from '../../../usecases/Algorithm/updateAlgorithm.usecase';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import Editor from 'react-simple-code-editor';
-import { highlight, languages } from 'prismjs';
-import 'prismjs/components/prism-clike';
-import 'prismjs/components/prism-python';
-import 'prismjs/themes/prism-tomorrow.css';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchAlgorithmByIdUseCase } from '@/usecases/Algorithm/fetchAlgorithmsById.usecase';
+import { CodeEditor } from '../components/CodeEditor';
 
-languages.python = {
-  ...languages.python,
-  'operator': /[=:]/
-};
 
 export const AlgorithmEditPage: React.FC = () => {
 	const { id } = useParams<{ id: string }>();
@@ -111,21 +103,10 @@ export const AlgorithmEditPage: React.FC = () => {
 						</div>
 						<div className="space-y-2">
 							<Label htmlFor="solutionCode">Solution Code</Label>
-							<div className="border rounded-md overflow-hidden">
-								<Editor
-									value={algorithm.solution_code}
-									onValueChange={handleCodeChange}
-									highlight={code => highlight(code, languages.python, 'python')}
-									padding={16}
-									style={{
-										fontFamily: '"Fira code", "Fira Mono", monospace',
-										fontSize: 14,
-										backgroundColor: 'transparent',
-										minHeight: '300px',
-									}}
-									textareaClassName="focus:outline-none"
-								/>
-							</div>
+							<CodeEditor
+								value={algorithm.solution_code}
+								onChange={handleCodeChange}
+							/>
 						</div>
 						<div className="flex justify-end gap-2">
                             <Button variant="outline" onClick={() => navigate('/algoritmos')}>Cancel</Button>
