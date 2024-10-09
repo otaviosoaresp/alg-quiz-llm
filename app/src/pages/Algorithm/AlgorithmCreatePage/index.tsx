@@ -4,9 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Algorithm } from '@/types/algorithm';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { CodeEditor } from '../components/CodeEditor';
 import './styles.scss';
+import { createAlgorithmUseCase } from '@/usecases/Algorithm/createAlgorithm.usecase';
 
 export const AlgorithmCreatePage = () => {
   const [name, setName] = useState('');
@@ -16,8 +18,8 @@ export const AlgorithmCreatePage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ name, description, solutionCode });
-    navigate('/algoritmos');
+    const algorithm = await createAlgorithmUseCase({ name, description, solution_code: solutionCode } as Algorithm);
+    navigate(`/algoritmos/${algorithm.id}`);
   };
 
   return (
@@ -62,7 +64,13 @@ export const AlgorithmCreatePage = () => {
           </motion.form>
         </CardContent>
         <CardFooter>
-          <Button type="submit">Create Algorithm</Button>
+          <Button 
+            type="submit" 
+            disabled={!name || !description || !solutionCode}
+            onClick={handleSubmit}
+          >
+            Create Algorithm
+          </Button>
         </CardFooter>
       </Card>
     </div>

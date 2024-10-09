@@ -22,7 +22,7 @@ export function Header(): React.ReactNode {
                             isActive ? "text-primary font-semibold" : "text-muted-foreground"
                         }
                     >
-                        Algoritmos
+                        Algorithms
                     </NavLink>
                     <NavLink 
                         to="/quizz" 
@@ -30,15 +30,7 @@ export function Header(): React.ReactNode {
                             isActive ? "text-primary font-semibold" : "text-muted-foreground"
                         }
                     >
-                        Quizz
-                    </NavLink>
-                    <NavLink 
-                        to="/sobre" 
-                        className={({ isActive }) => 
-                            isActive ? "text-primary font-semibold" : "text-muted-foreground"
-                        }
-                    >
-                        Sobre
+                        Quiz
                     </NavLink>
                 </nav>
             </div>

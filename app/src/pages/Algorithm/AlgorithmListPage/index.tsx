@@ -60,8 +60,11 @@ export const AlgorithmListPage = () => {
 
   const handleStartQuiz = async (algorithmId: number) => {
     try {
+      console.log('Starting quiz for algorithm:', algorithmId);
       const quiz = await generateQuizUseCase(algorithmId);
+      console.log('Quiz generated:', quiz);
       navigate(`/quiz/${algorithmId}`, { state: { quiz } });
+      console.log('Navigation attempted');
     } catch (error) {
       console.error('Failed to generate quiz:', error);
     }

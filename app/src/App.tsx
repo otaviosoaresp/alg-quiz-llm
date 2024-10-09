@@ -4,6 +4,7 @@ import { HomePage } from './pages/HomePage';
 import { AlgorithmListPage } from './pages/Algorithm/AlgorithmListPage';
 import { AlgorithmCreatePage } from './pages/Algorithm/AlgorithmCreatePage';
 import { AlgorithmEditPage } from './pages/Algorithm/AlgorithmEditPage';
+import { QuizPage } from './pages/QuizPage';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
             <Route path="/algoritmos" element={<AlgorithmListPage />} />
             <Route path="/algoritmos/novo" element={<AlgorithmCreatePage />} />
             <Route path="/algoritmos/:id" element={<AlgorithmEditPage />} />
+            <Route path="/quiz/:id" element={<QuizPage />} />
             <Route path="/quizz" element={<div>Quizz</div>} />
             <Route path="/sobre" element={<div>Sobre</div>} />
           </Routes>
