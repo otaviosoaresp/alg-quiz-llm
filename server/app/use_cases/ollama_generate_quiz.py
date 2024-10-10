@@ -3,9 +3,9 @@ import json
 import logging
 import re
 
-from app.repositories.algorithm_repository import get_algorithm_by_id
 from app.db.session import SessionLocal
 from app.core.config import settings
+from app.repositories.algorithm_repository import AlgorithmRepository
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -133,7 +133,7 @@ class OllamaGenerateQuizUseCase:
     def execute(self, algorithm_id: int):
         db = SessionLocal()
         try:
-            algorithm = get_algorithm_by_id(db, algorithm_id)
+            algorithm = AlgorithmRepository.get_by_id(db, algorithm_id)
             if not algorithm:
                 return {"error": "Algorithm not found"}
 

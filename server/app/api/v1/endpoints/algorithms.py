@@ -1,75 +1,66 @@
-from fastapi import APIRouter, Depends, HTTPException, Body
-from sqlalchemy.orm import Session
+from typing import List
+
 from app.db.session import get_db
-from app.services import algorithm_service
-from app.schemas.algorithm import AlgorithmResponse, AlgorithmCreate
+from app.schemas.algorithm import Algorithm, AlgorithmCreate, AlgorithmUpdate
+from app.schemas.tag import TagCreate
+from app.services.algorithm_service import AlgorithmService
 from app.use_cases.ollama_generate_quiz import OllamaGenerateQuizUseCase
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.orm import Session
 
 router = APIRouter()
 
 
-@router.get("/algorithms", response_model=list[AlgorithmResponse], tags=["algorithms"])
-async def get_algorithms(db: Session = Depends(get_db), skip: int = 0, limit: int = 100):
-    """
-    Recupera uma lista de algoritmos.
-
-    - **skip**: Número de registros para pular (para paginação)
-    - **limit**: Número máximo de registros para retornar
-    """
-    algorithms = algorithm_service.get_algorithms(db, skip=skip, limit=limit)
-    return [AlgorithmResponse.from_orm(algo) for algo in algorithms]
-
-@router.post("/algorithms", response_model=AlgorithmResponse, tags=["algorithms"])
-async def create_algorithm(
-    algorithm: AlgorithmCreate = Body(..., example={
-        "name": "Two Sum",
-        "description": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
-        "solution_code": "class Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        aux_map = {}\n        for idx, num in enumerate(nums):\n            obj = target - num\n            if obj in aux_map:\n                return [aux_map[obj], idx]\n            aux_map[num] = idx"
-    }),
-    db: Session = Depends(get_db)
+@router.get("/", response_model=List[Algorithm])
+def get_algorithms(
+    db: Session = Depends(get_db),
+    search: str = Query(None, description="Search algorithms by name")
 ):
-    """
-    Cria um novo algoritmo.
+    algorithms = AlgorithmService.get_all_algorithms(db, search)
+    return algorithms 
 
-    - **algorithm**: Dados do algoritmo a ser criado
-    """
-    created_algorithm = algorithm_service.create_algorithm(db, algorithm)
-    return AlgorithmResponse.from_orm(created_algorithm)
-
-@router.get("/algorithms/{algorithm_id}", response_model=AlgorithmResponse, tags=["algorithms"])
-async def get_algorithm(algorithm_id: int, db: Session = Depends(get_db)):
-    """
-    Recupera um algoritmo específico pelo ID.
-
-    - **algorithm_id**: ID do algoritmo a ser recuperado
-    """
-    algorithm = algorithm_service.get_algorithm(db, algorithm_id)
+@router.get("/{algorithm_id}", response_model=Algorithm)
+def get_algorithm(algorithm_id: int, db: Session = Depends(get_db)):
+    algorithm = AlgorithmService.get_algorithm_by_id(db, algorithm_id)
     if algorithm is None:
         raise HTTPException(status_code=404, detail="Algorithm not found")
-    return AlgorithmResponse.from_orm(algorithm)
+    return algorithm
 
-@router.put("/algorithms/{algorithm_id}", response_model=AlgorithmResponse, tags=["algorithms"])
-async def update_algorithm(algorithm_id: int, algorithm: AlgorithmCreate, db: Session = Depends(get_db)):
-    """
-    Atualiza um algoritmo específico pelo ID.
+@router.post("/", response_model=Algorithm)
+def create_algorithm(algorithm: AlgorithmCreate, db: Session = Depends(get_db)):
+    return AlgorithmService.create_algorithm(db, algorithm)
 
-    - **algorithm_id**: ID do algoritmo a ser atualizado
-    - **algorithm**: Dados do algoritmo a ser atualizado
-    """
-    updated_algorithm = algorithm_service.update_algorithm(db, algorithm_id, algorithm)
-    return AlgorithmResponse.from_orm(updated_algorithm)
+@router.put("/{algorithm_id}", response_model=Algorithm)
+def update_algorithm(algorithm_id: int, algorithm: AlgorithmUpdate, db: Session = Depends(get_db)):
+    db_algorithm = AlgorithmService.get_algorithm_by_id(db, algorithm_id)
+    if db_algorithm is None:
+        raise HTTPException(status_code=404, detail="Algorithm not found")
+    
+    algorithm_data = algorithm.dict(exclude={"tags"})
+    tags = [tag.name if isinstance(tag, TagCreate) else tag for tag in algorithm.tags]
+    
+    updated_algorithm = AlgorithmService.update_algorithm(db, algorithm_id, algorithm_data, tags)
+    
+    return updated_algorithm
 
-@router.delete("/algorithms/{algorithm_id}", tags=["algorithms"])
-async def delete_algorithm(algorithm_id: int, db: Session = Depends(get_db)):
-    """
-    Deleta um algoritmo específico pelo ID.
+@router.delete("/{algorithm_id}", response_model=Algorithm)
+def delete_algorithm(algorithm_id: int, db: Session = Depends(get_db)):
+    algorithm = AlgorithmService.delete_algorithm(db, algorithm_id)
+    if algorithm is None:
+        raise HTTPException(status_code=404, detail="Algorithm not found")
+    return algorithm
 
-    - **algorithm_id**: ID do algoritmo a ser deletado
-    """
-    algorithm_service.delete_algorithm(db, algorithm_id)
-    return {"message": "Algorithm deleted successfully"}
+@router.post("/test", response_model=Algorithm)
+def create_test_algorithm(db: Session = Depends(get_db)):
+    algorithm_data = {
+        "name": "Test Algorithm",
+        "description": "This is a test algorithm",
+        "solution_code": "def test(): pass"
+    }
+    tags = ["test", "algorithm"]
+    return AlgorithmService.create_algorithm(db, algorithm_data, tags)
 
-@router.get("/algorithms/{algorithm_id}/generate-quiz", tags=["algorithms"])
+@router.get("/{algorithm_id}/generate-quiz", tags=["algorithms"])
 async def generate_quiz(algorithm_id: int):
     """
     Gera um quiz para um algoritmo específico.

@@ -24,14 +24,6 @@ export function Header(): React.ReactNode {
                     >
                         Algorithms
                     </NavLink>
-                    <NavLink 
-                        to="/quizz" 
-                        className={({ isActive }) => 
-                            isActive ? "text-primary font-semibold" : "text-muted-foreground"
-                        }
-                    >
-                        Quiz
-                    </NavLink>
                 </nav>
             </div>
         </header>

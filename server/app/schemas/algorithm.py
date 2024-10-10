@@ -1,6 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
+from typing import List, Optional, Union
 from datetime import datetime
-from typing import Optional
+from app.schemas.tag import TagCreate, Tag
 
 class AlgorithmBase(BaseModel):
     name: str
@@ -8,34 +9,23 @@ class AlgorithmBase(BaseModel):
     solution_code: str
 
 class AlgorithmCreate(AlgorithmBase):
-    pass
+    tags: List[TagCreate] = []
 
 class AlgorithmUpdate(AlgorithmBase):
-    pass
+    tags: List[Union[str, TagCreate]] = []
 
-class AlgorithmInDB(AlgorithmBase):
+class Algorithm(AlgorithmBase):
     id: int
+    tags: List[Tag] = []
     created_at: datetime
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
-
-class AlgorithmResponse(AlgorithmInDB):
-    created_at: str = Field(..., example="2023-04-20T12:34:56.789Z")
-    updated_at: str = Field(..., example="2023-04-20T12:34:56.789Z")
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
-    def from_orm(cls, obj):
-        # Convertir datetime a string ISO 8601
-        return cls(
-            id=obj.id,
-            name=obj.name,
-            description=obj.description,
-            solution_code=obj.solution_code,
-            created_at=obj.created_at.isoformat() if obj.created_at else None,
-            updated_at=obj.updated_at.isoformat() if obj.updated_at else None
-        )
-
-    class Config:
-        from_attributes = True
+    def model_validate(cls, obj):
+        if isinstance(obj, dict):
+            for field in ['created_at', 'updated_at']:
+                if field in obj and isinstance(obj[field], str):
+                    obj[field] = datetime.strptime(obj[field], '%Y-%m-%d %H:%M:%S.%f')
+        return super().model_validate(obj)

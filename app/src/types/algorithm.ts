@@ -1,8 +1,11 @@
+import { Tag } from "./tag";
+
 export interface Algorithm {
-  id: number;
+  readonly id: number;
   name: string;
   description: string;
   solution_code: string;
-  created_at: string;
-  updated_at: string;
+  tags: Tag[];
+  readonly created_at: string;
+  readonly updated_at: string;
 }

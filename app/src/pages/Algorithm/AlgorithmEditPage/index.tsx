@@ -1,77 +1,56 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Algorithm } from '../../../types/algorithm';
-
-import { updateAlgorithmUseCase } from '../../../usecases/Algorithm/updateAlgorithm.usecase';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { fetchAlgorithmByIdUseCase } from '@/usecases/Algorithm/fetchAlgorithmsById.usecase';
 import { CodeEditor } from '../components/CodeEditor';
-
+import { TagInput } from '@/components/TagInput';
+import { useAlgorithm } from '@/hooks/useAlgorithm';
+import { useTags } from '@/hooks/useTags';
+import { Tag } from '@/types/tag';
 
 export const AlgorithmEditPage: React.FC = () => {
 	const { id } = useParams<{ id: string }>();
 	const navigate = useNavigate();
-	const [algorithm, setAlgorithm] = useState<Algorithm | null>(null);
-	const [isLoading, setIsLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+	const { algorithm, setAlgorithm, isLoading, error, updateAlgorithm } = useAlgorithm(id);
+	const { tags, isLoading: isLoadingTags, error: tagsError } = useTags();
 
-	useEffect(() => {
-		const loadAlgorithm = async () => {
-			if (!id) return;
-			try {
-				setIsLoading(true);
-				const data = await fetchAlgorithmByIdUseCase(parseInt(id, 10));
-				setAlgorithm(data);
-				setError(null);
-			} catch (err) {
-				setError('Failed to load algorithm. Please try again later.');
-			} finally {
-				setIsLoading(false);
-			}
-		};
-
-		loadAlgorithm();
-	}, [id]);
+	if (isLoading || isLoadingTags) return <div>Loading...</div>;
+	if (error || tagsError) return <div>Error: {error || tagsError}</div>;
+	if (!algorithm) return <div>Algorithm not found</div>;
 
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-		if (algorithm) {
-			setAlgorithm({ ...algorithm, [e.target.name]: e.target.value });
-		}
+		setAlgorithm({ ...algorithm, [e.target.name]: e.target.value });
 	};
 
 	const handleCodeChange = (code: string) => {
-		if (algorithm) {
-			setAlgorithm({ ...algorithm, solution_code: code });
+		setAlgorithm({ ...algorithm, solution_code: code });
+	};
+
+	const handleTagSelect = (tag: Tag) => {
+		if (!algorithm.tags.some(t => t.name.toLowerCase() === tag.name.toLowerCase())) {
+			setAlgorithm({ ...algorithm, tags: [...algorithm.tags, tag] });
 		}
+	};
+
+	const handleTagCreate = (tagName: string) => {
+		const newTag: Tag = { id: null, name: tagName };
+		setAlgorithm({ ...algorithm, tags: [...algorithm.tags, newTag] });
+	};
+
+	const handleTagRemove = (tagToRemove: Tag) => {
+		setAlgorithm({
+			...algorithm,
+			tags: algorithm.tags.filter(tag => tag.name !== tagToRemove.name)
+		});
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!algorithm) return;
-
-		try {
-			await updateAlgorithmUseCase(algorithm.id, algorithm);
-			navigate('/algoritmos');
-		} catch (err) {
-			setError('Failed to update algorithm. Please try again.');
-		}
+		await updateAlgorithm(algorithm);
+		navigate('/algoritmos');
 	};
-
-	if (isLoading) {
-		return <div>Loading...</div>;
-	}
-
-	if (error) {
-		return <div>Error: {error}</div>;
-	}
-
-	if (!algorithm) {
-		return <div>Algorithm not found</div>;
-	}
 
 	return (
 		<div className="container mx-auto py-6">
@@ -81,8 +60,7 @@ export const AlgorithmEditPage: React.FC = () => {
 				</CardHeader>
 				<CardContent>
 					<form onSubmit={handleSubmit} className="space-y-6">
-						<div className="space-y-2">
-							<Label htmlFor="name">Name</Label>
+						<AlgorithmFormField label="Name" id="name">
 							<Input
 								type="text"
 								id="name"
@@ -90,9 +68,8 @@ export const AlgorithmEditPage: React.FC = () => {
 								value={algorithm.name}
 								onChange={handleInputChange}
 							/>
-						</div>
-						<div className="space-y-2">
-							<Label htmlFor="description">Description</Label>
+						</AlgorithmFormField>
+						<AlgorithmFormField label="Description" id="description">
 							<Textarea
 								id="description"
 								name="description"
@@ -100,17 +77,25 @@ export const AlgorithmEditPage: React.FC = () => {
 								onChange={handleInputChange}
 								rows={10}
 							/>
-						</div>
-						<div className="space-y-2">
-							<Label htmlFor="solutionCode">Solution Code</Label>
+						</AlgorithmFormField>
+						<AlgorithmFormField label="Tags">
+							<TagInput
+								tags={tags}
+								selectedTags={algorithm.tags}
+								onTagSelect={handleTagSelect}
+								onTagRemove={handleTagRemove}
+								onTagCreate={handleTagCreate}
+							/>
+						</AlgorithmFormField>
+						<AlgorithmFormField label="Solution Code" id="solutionCode">
 							<CodeEditor
 								value={algorithm.solution_code}
 								onChange={handleCodeChange}
 							/>
-						</div>
+						</AlgorithmFormField>
 						<div className="flex justify-end gap-2">
-                            <Button variant="outline" onClick={() => navigate('/algoritmos')}>Cancel</Button>
-                            <Button type="submit">Save Changes</Button>
+							<Button variant="outline" onClick={() => navigate('/algoritmos')}>Cancel</Button>
+							<Button type="submit">Save Changes</Button>
 						</div>
 					</form>
 				</CardContent>
@@ -118,3 +103,10 @@ export const AlgorithmEditPage: React.FC = () => {
 		</div>
 	);
 };
+
+const AlgorithmFormField: React.FC<{label: string; id?: string; children: React.ReactNode}> = ({label, id, children}) => (
+	<div className="space-y-2">
+		<label htmlFor={id} className="text-sm font-medium">{label}</label>
+		{children}
+	</div>
+);
